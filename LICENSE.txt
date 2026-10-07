@@ -1,0 +1,3 @@
+Universal AI Document Studio starter files
+
+You may use, modify, copy, and redistribute these starter files for personal or commercial work without restriction.

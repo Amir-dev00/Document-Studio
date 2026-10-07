@@ -1,0 +1,156 @@
+/* Starter document layer. Replace freely. The engine does not depend on these classes. */
+
+#documentRoot {
+  --doc-primary: #16181d;
+  --doc-secondary: #5c6570;
+  --doc-accent: #1f6f5b;
+  --doc-text: #1c1f24;
+  --doc-muted: #6b7280;
+  --doc-surface: #f3f4f6;
+  --doc-paper: #fafaf8;
+  --doc-line: #e6e4df;
+  --doc-display: "Manrope", "Vazirmatn", ui-sans-serif, sans-serif;
+  --doc-body: "Source Sans 3", "Vazirmatn", ui-sans-serif, sans-serif;
+  color: var(--doc-text);
+  font-family: var(--doc-body);
+}
+
+#documentRoot .page { background: var(--doc-paper); }
+
+.sheet {
+  height: 100%;
+  padding: 18mm 18mm 16mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.kicker {
+  margin: 0 0 6mm;
+  font-family: var(--doc-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--doc-accent);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--doc-display);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--doc-primary);
+}
+
+.lede {
+  margin: 6mm 0 0;
+  max-width: 140mm;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--doc-secondary);
+}
+
+.rule {
+  width: 18mm;
+  height: 2px;
+  margin: 8mm 0 0;
+  background: var(--doc-accent);
+  border: 0;
+}
+
+.grow { flex: 1; }
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6mm;
+  padding-top: 6mm;
+  border-top: 1px solid var(--doc-line);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--doc-muted);
+}
+
+.meta b {
+  display: block;
+  margin-bottom: 1.5mm;
+  font-family: var(--doc-display);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--doc-primary);
+}
+
+h2 {
+  margin: 0 0 3mm;
+  font-family: var(--doc-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--doc-primary);
+}
+
+.steps {
+  margin: 4mm 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4mm;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 14mm 1fr;
+  gap: 4mm;
+  padding-top: 4mm;
+  border-top: 1px solid var(--doc-line);
+}
+
+.steps .n {
+  font-family: var(--doc-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--doc-accent);
+}
+
+.steps h3 {
+  margin: 0 0 1mm;
+  font-family: var(--doc-display);
+  font-size: 16px;
+  color: var(--doc-primary);
+}
+
+.steps p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--doc-secondary);
+}
+
+.page-no {
+  position: absolute;
+  left: 18mm;
+  bottom: 8mm;
+  font-family: var(--doc-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--doc-muted);
+}
+
+.foot-note {
+  position: absolute;
+  right: 18mm;
+  bottom: 8mm;
+  font-size: 11px;
+  color: var(--doc-muted);
+}
+
+code, .mono {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.92em;
+}

@@ -1,0 +1,8 @@
+Read AI_INSTRUCTIONS.md and DESIGN_GUIDE.md before you design. Use both. Every model must: Cursor, Claude, ChatGPT, Gemini, and any other LLM.
+
+Create: [DESCRIBE THE PDF]
+Audience: [AUDIENCE]
+Goal: [GOAL]
+Source material: [ATTACH OR PASTE]
+
+Replace the starter pages. You own the document: structure, page count, typography, color, layout, and visuals. Preserve the engine. Deliver pages that print cleanly, with no clipping.

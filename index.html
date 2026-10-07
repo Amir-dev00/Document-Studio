@@ -1,0 +1,1519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Document Studio — Sample Proposal</title>
+  <link rel="stylesheet" href="fonts/fonts.css" onerror="this.remove()" />
+  <link rel="stylesheet" href="css/editor.css" />
+  <link rel="stylesheet" href="css/proposal-fa.css" />
+  <link rel="stylesheet" href="css/print.css" />
+  <style>
+    /* ============================================================
+       UNIVERSAL AI DOCUMENT STUDIO
+       ENGINE CSS: preserve behavior; document CSS below is AI-owned.
+       ============================================================ */
+    :root {
+      --ui-bg: #101114;
+      --ui-panel: rgba(28, 30, 36, .92);
+      --ui-panel-2: #24262d;
+      --ui-text: #f4f4f5;
+      --ui-muted: #a1a1aa;
+      --ui-line: rgba(255,255,255,.10);
+      --ui-accent: #8b9cff;
+      --ui-danger: #ff6b6b;
+      --ui-radius: 14px;
+      --page-width: 210mm;
+      --page-height: 297mm;
+      --viewer-gap: 26px;
+      --zoom: 1;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+
+    .app-chrome {
+      position: fixed;
+      z-index: 9999;
+      user-select: none;
+    }
+
+    .toolbar {
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 8px;
+      max-width: calc(100vw - 28px);
+      overflow-x: auto;
+      background: var(--ui-panel);
+      border: 1px solid var(--ui-line);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.34);
+      backdrop-filter: blur(18px);
+    }
+    .toolbar::-webkit-scrollbar { display: none; }
+    .tool-group { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; }
+    .divider { width: 1px; height: 24px; background: var(--ui-line); margin: 0 3px; flex: 0 0 auto; }
+
+    .btn, .field, .select {
+      height: 34px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--ui-text);
+      transition: .15s ease;
+    }
+    .btn {
+      min-width: 34px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(255,255,255,.08); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: #f4f4f5; color: #111217; }
+    .btn.primary:hover { background: #fff; }
+    .btn.active { background: rgba(139,156,255,.18); border-color: rgba(139,156,255,.35); }
+    .btn.danger:hover { background: rgba(255,107,107,.13); color: #ffd4d4; }
+    .btn[disabled] { opacity: .35; cursor: default; }
+
+    .field {
+      width: 48px;
+      padding: 0 7px;
+      text-align: center;
+      background: rgba(255,255,255,.05);
+      border-color: var(--ui-line);
+      outline: none;
+    }
+    .select {
+      padding: 0 28px 0 9px;
+      background: var(--ui-panel-2);
+      border-color: var(--ui-line);
+      outline: none;
+    }
+
+    .page-counter { font-size: 12px; color: var(--ui-muted); min-width: 38px; text-align: center; }
+    .zoom-label { font-size: 11px; color: var(--ui-muted); min-width: 38px; text-align: center; }
+
+    .side-panel {
+      top: 66px;
+      right: 14px;
+      width: 244px;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      padding: 12px;
+      background: var(--ui-panel);
+      border: 1px solid var(--ui-line);
+      border-radius: var(--ui-radius);
+      box-shadow: 0 12px 40px rgba(0,0,0,.30);
+      backdrop-filter: blur(18px);
+      display: none;
+    }
+    .side-panel.open { display: block; }
+    .panel-title { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); margin: 4px 2px 10px; }
+    .theme-grid { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+    .theme-grid label { font-size: 12px; color: #d4d4d8; }
+    .theme-grid input[type="color"] { width: 38px; height: 28px; padding: 0; border: 0; border-radius: 7px; overflow: hidden; background: none; cursor: pointer; }
+    .panel-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 12px; }
+    .panel-actions .btn { background: rgba(255,255,255,.05); border-color: var(--ui-line); }
+
+    .format-bar {
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 7px;
+      background: var(--ui-panel);
+      border: 1px solid var(--ui-line);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.34);
+      backdrop-filter: blur(18px);
+    }
+    body.edit-mode .format-bar { display: flex; }
+    .format-bar input[type="color"] { width: 31px; height: 31px; padding: 2px; background: transparent; border: 1px solid var(--ui-line); border-radius: 8px; }
+
+    .status-pill {
+      left: 14px;
+      bottom: 14px;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--ui-muted);
+      background: var(--ui-panel);
+      border: 1px solid var(--ui-line);
+      border-radius: 999px;
+      backdrop-filter: blur(18px);
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #62d98b; box-shadow: 0 0 0 3px rgba(98,217,139,.10); }
+    .dot.warn { background: #ffbd5a; box-shadow: 0 0 0 3px rgba(255,189,90,.10); }
+
+    .page-rail {
+      position: fixed;
+      z-index: 8000;
+      left: 14px;
+      top: 72px;
+      bottom: 54px;
+      width: 46px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .page-rail::-webkit-scrollbar { display: none; }
+    .rail-page {
+      width: 34px; height: 44px;
+      border: 1px solid var(--ui-line);
+      border-radius: 5px;
+      background: rgba(255,255,255,.05);
+      color: var(--ui-muted);
+      font-size: 10px;
+      cursor: pointer;
+      position: relative;
+    }
+    .rail-page:hover { background: rgba(255,255,255,.10); }
+    .rail-page.active { border-color: var(--ui-accent); color: #fff; background: rgba(139,156,255,.14); }
+    .rail-page.has-overflow::after {
+      content: "";
+      position: absolute;
+      width: 6px; height: 6px;
+      right: -3px; top: -3px;
+      border-radius: 50%; background: #ffbd5a;
+    }
+
+    #viewer {
+      min-height: 100vh;
+      padding: 118px 72px 76px 130px;
+      overflow-x: auto;
+    }
+    #documentRoot {
+      width: var(--page-width);
+      margin: 0 auto;
+      zoom: var(--zoom);
+      box-sizing: border-box;
+    }
+
+    .page {
+      position: relative;
+      box-sizing: border-box;
+      width: var(--page-width);
+      height: var(--page-height);
+      overflow: hidden;
+      margin: 0 auto var(--viewer-gap);
+      background: #fff;
+      color: #15171a;
+      box-shadow: 0 18px 55px rgba(0,0,0,.38), 0 0 0 1px rgba(0,0,0,.10);
+      isolation: isolate;
+    }
+    .page:last-child { margin-bottom: 0; }
+    .page-body {
+      position: absolute;
+      top: var(--page-margin-top, 0);
+      right: var(--page-margin-right, 0);
+      bottom: var(--page-margin-bottom, 0);
+      left: var(--page-margin-left, 0);
+      overflow: hidden;
+      box-sizing: border-box;
+      width: auto;
+      height: auto;
+    }
+    .page[data-overflow="true"]::after {
+      content: "CONTENT OVERFLOW";
+      position: absolute;
+      z-index: 999;
+      right: 7mm;
+      bottom: 6mm;
+      padding: 1.5mm 2.2mm;
+      border-radius: 2mm;
+      font: 700 8px/1.1 ui-sans-serif, sans-serif;
+      letter-spacing: .08em;
+      color: #5b3400;
+      background: #ffcf70;
+      border: 1px solid rgba(91,52,0,.16);
+      pointer-events: none;
+    }
+
+    body.edit-mode #documentRoot [contenteditable="true"] { outline: 1px dashed rgba(94,114,228,.0); outline-offset: 2px; border-radius: 2px; }
+    body.edit-mode #documentRoot [contenteditable="true"]:hover { outline-color: rgba(94,114,228,.28); }
+    body.edit-mode #documentRoot [contenteditable="true"]:focus { outline: 2px solid rgba(94,114,228,.55); background: rgba(94,114,228,.045); }
+
+    .page-select-ring {
+      position: absolute;
+      inset: 3mm;
+      border: 1px dashed transparent;
+      pointer-events: none;
+      z-index: 998;
+    }
+    body.edit-mode .page.current-page .page-select-ring { border-color: rgba(94,114,228,.22); }
+
+    @media (max-width: 900px) {
+      #viewer { padding-left: 58px; padding-right: 18px; }
+      .side-panel { right: 8px; width: 220px; }
+      .toolbar { left: 8px; right: 8px; transform: none; }
+    }
+
+    @page { size: A4 portrait; margin: 0; }
+    /* Full print rules live in css/print.css — keep a minimal engine fallback here */
+    @media print {
+      :root { --viewer-gap: 0px; --zoom: 1 !important; }
+      html, body { width: 210mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+      .app-chrome, .page-rail, .page-rail-v2, .page-select-ring { display: none !important; }
+      #viewer { padding: 0 !important; margin: 0 !important; overflow: visible !important; width: 210mm !important; }
+      #documentRoot {
+        width: 210mm !important;
+        max-width: 210mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        zoom: 1 !important;
+        transform: none !important;
+      }
+      .page {
+        box-sizing: border-box !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        max-height: 297mm !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        break-after: page;
+        page-break-after: always;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .page:last-child { break-after: auto; page-break-after: auto; }
+      .page[data-overflow="true"]::after { display: none !important; }
+      [contenteditable] { outline: none !important; }
+    }
+
+    /* Document visual system lives in css/proposal.css */
+  </style>
+</head>
+<body>
+  <!-- ========================== ENGINE UI: PRESERVE ========================== -->
+  <header class="toolbar app-chrome" aria-label="Document toolbar">
+    <div class="tool-group">
+      <button class="btn" id="prevBtn" title="Previous page" aria-label="Previous page">&#8592;</button>
+      <input class="field" id="pageInput" type="number" min="1" value="1" aria-label="Current page" />
+      <span class="page-counter" id="pageCount">/ 1</span>
+      <button class="btn" id="nextBtn" title="Next page" aria-label="Next page">&#8594;</button>
+    </div>
+    <span class="divider"></span>
+    <div class="tool-group">
+      <button class="btn" id="zoomOutBtn" title="Zoom out">−</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="btn" id="zoomInBtn" title="Zoom in">+</button>
+      <button class="btn" id="fitBtn" title="Fit width">Fit</button>
+    </div>
+    <span class="divider"></span>
+    <div class="tool-group">
+      <button class="btn" id="editBtn" title="Toggle edit mode">Edit</button>
+      <button class="btn" id="themeBtn" title="Theme controls">Theme</button>
+      <button class="btn" id="addTextBtn" title="Add editable text">+ Text</button>
+    </div>
+    <span class="divider"></span>
+    <div class="tool-group">
+      <button class="btn" id="addPageBtn" title="Add blank page">+ Page</button>
+      <button class="btn" id="duplicatePageBtn" title="Duplicate current page">Duplicate</button>
+      <button class="btn danger" id="deletePageBtn" title="Delete current page">Delete</button>
+    </div>
+    <span class="divider"></span>
+    <div class="tool-group">
+      <button class="btn" id="exportHtmlBtn" title="Export current editable HTML">Export HTML</button>
+      <button class="btn primary" id="printBtn" title="Print or Save as PDF">Print / PDF</button>
+    </div>
+  </header>
+
+  <aside id="themePanel" class="side-panel app-chrome" aria-label="Theme controls">
+    <div class="panel-title">Document variables</div>
+    <div class="theme-grid">
+      <label for="primaryColor">Primary</label><input id="primaryColor" type="color" data-var="--doc-primary" />
+      <label for="secondaryColor">Secondary</label><input id="secondaryColor" type="color" data-var="--doc-secondary" />
+      <label for="accentColor">Accent</label><input id="accentColor" type="color" data-var="--doc-accent" />
+      <label for="textColor">Text</label><input id="textColor" type="color" data-var="--doc-text" />
+      <label for="mutedColor">Muted</label><input id="mutedColor" type="color" data-var="--doc-muted" />
+      <label for="surfaceColor">Surface</label><input id="surfaceColor" type="color" data-var="--doc-surface" />
+      <label for="paperColor">Paper</label><input id="paperColor" type="color" data-var="--doc-paper" />
+    </div>
+    <div class="panel-actions">
+      <button class="btn" id="saveBtn">Save</button>
+      <button class="btn danger" id="resetBtn">Reset</button>
+    </div>
+  </aside>
+
+  <div class="status-pill app-chrome" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Ready</span></div>
+  <nav class="page-rail app-chrome" id="pageRail" aria-label="Pages" style="display:none"></nav>
+
+  <main id="viewer">
+    <!-- ====================== DOCUMENT CANVAS: AI OWNS ======================= -->
+        <div id="documentRoot" lang="fa" dir="rtl" data-document-studio="v1">
+
+      <!-- 01 COVER -->
+      <section class="page pp-dark" data-page-title="Cover">
+        <div class="page-select-ring"></div>
+        <div class="page-body" style="position:relative;height:100%;width:100%;overflow:hidden">
+          <div class="cover">
+            <div class="cover-hero">
+              <img src="assets/avat/living.jpg" alt="" />
+              <div class="cover-veil"></div>
+              <div class="cover-content">
+                <div class="cover-top">
+                  <p class="cover-mark" data-editable>Digital Flagship Proposal</p>
+                  <p class="cover-wordmark" data-editable>Your Brand</p>
+                </div>
+                <div class="cover-title-block">
+                  <h1 class="cover-title" data-editable>BRAND<em>A digital flagship</em></h1>
+                  <p class="cover-sub" data-editable>Not a catalogue. A place to discover, inspect, configure, and decide before anything arrives.</p>
+                </div>
+              </div>
+            </div>
+            <div class="cover-foot">
+              <div>
+                <b data-editable>Project</b>
+                <span data-editable>A flagship digital experience</span>
+              </div>
+              <div>
+                <b data-editable>Focus</b>
+                <span data-editable>Editorial · 3D · AR · Commerce</span>
+              </div>
+              <div>
+                <b data-editable>Prepared by</b>
+                <span data-editable></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 OPPORTUNITY -->
+      <section class="page" data-page-title="Opportunity">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>02</p>
+          <p class="pp-kicker" data-editable>The Opportunity</p>
+          <h1 class="pp-h1 xl" data-editable>Seeing is not enough.<br>It has to be experienced in place.</h1>
+          <div class="pp-rule accent"></div>
+          <div class="g-aside" style="margin-top:2mm">
+            <div>
+              <p class="pp-lead" style="margin-top:0" data-editable>A flat image and a list of measurements still leave the real decision to guesswork.</p>
+              <div class="stack" style="margin-top:5mm">
+                <div class="hairline">
+                  <h3 style="margin:0 0 1mm;font-family:var(--doc-display);font-size:12px;color:var(--ink)" data-editable>Unclear scale</h3>
+                  <p class="sm" data-editable>A number never replaces a sense of scale.</p>
+                </div>
+                <div class="hairline">
+                  <h3 style="margin:0 0 1mm;font-family:var(--doc-display);font-size:12px;color:var(--ink)" data-editable>Distant material</h3>
+                  <p class="sm" data-editable>Material and texture stay flat in a still photograph.</p>
+                </div>
+                <div class="hairline">
+                  <h3 style="margin:0 0 1mm;font-family:var(--doc-display);font-size:12px;color:var(--ink)" data-editable>A costly guess</h3>
+                  <p class="sm" data-editable>Without spatial confidence, people hesitate or leave.</p>
+                </div>
+              </div>
+            </div>
+            <div class="fig fig-tall">
+              <img src="assets/avat/sofa2.jpg" alt="" />
+              <div class="fig-overlay-text" data-editable>A catalogue does not create presence.</div>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 03 VISION -->
+      <section class="page" data-page-title="Vision">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>03</p>
+          <p class="pp-kicker" data-editable>Our Vision</p>
+          <h1 class="pp-h1 xl" data-editable>It should feel like a digital flagship.</h1>
+          <p class="pp-lead" data-editable>The brand designs presence. This experience designs that presence online.</p>
+          <div class="pp-rule accent"></div>
+          <div class="fig fig-full" style="margin-top:1mm">
+            <img src="assets/avat/hero.jpg" alt="" style="object-position:center 55%" />
+          </div>
+          <div class="g3" style="margin-top:4mm">
+            <div class="panel sand">
+              <p class="en-label" data-editable>Editorial</p>
+              <h3 data-editable>Spatial story</h3>
+              <p class="sm" data-editable>Every arrival should feel like a lookbook, not a product list.</p>
+            </div>
+            <div class="panel sand">
+              <p class="en-label" data-editable>Interactive</p>
+              <h3 data-editable>Try before you buy</h3>
+              <p class="sm" data-editable>3D, materials, and augmented reality, so the object can be seen in a real room.</p>
+            </div>
+            <div class="panel ink">
+              <p class="en-label" style="color:var(--brass-soft)" data-editable>Commerce</p>
+              <h3 data-editable>Decide with confidence</h3>
+              <p class="sm" data-editable>From inspiration to a conversation, without a break in the path.</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 04 PRINCIPLES -->
+      <section class="page" data-page-title="Principles">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>04</p>
+          <p class="pp-kicker" data-editable>Experience Principles</p>
+          <h1 class="pp-h1" data-editable>Five principles for the experience</h1>
+          <p class="pp-lead" data-editable>Every screen follows these principles. They are design rules, not slogans.</p>
+          <div class="pp-rule accent"></div>
+          <div class="principle">
+            <div class="n" data-editable>01</div>
+            <div>
+              <h3 data-editable>Editorial</h3>
+              <p data-editable>Large images, quiet space, precise headlines. The object leads. The interface follows.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="n" data-editable>02</div>
+            <div>
+              <h3 data-editable>Immersive</h3>
+              <p data-editable>A collection is a designed space, not a filter grid.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="n" data-editable>03</div>
+            <div>
+              <h3 data-editable>Interactive</h3>
+              <p data-editable>Rotation, materials, dimensions, and placement are tools for understanding.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="n" data-editable>04</div>
+            <div>
+              <h3 data-editable>Personal</h3>
+              <p data-editable>Save a configuration, share it, and continue the decision with a person.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <div class="n" data-editable>05</div>
+            <div>
+              <h3 data-editable>Effortless</h3>
+              <p data-editable>Mobile first, calm motion, and a short path from interest to action.</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 05 JOURNEY -->
+      <section class="page" data-page-title="Journey">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>05</p>
+          <p class="pp-kicker" data-editable>Digital Experience</p>
+          <h1 class="pp-h1" data-editable>From discovery to a decision</h1>
+          <p class="pp-lead" data-editable>One continuous loop. Not a set of pages that never meet.</p>
+          <div class="pp-rule accent"></div>
+          <div class="journey">
+            <div class="journey-step">
+              <div class="n" data-editable>01</div>
+              <h3 data-editable>Discover</h3>
+              <p data-editable>A cinematic first view</p>
+            </div>
+            <div class="journey-step">
+              <div class="n" data-editable>02</div>
+              <h3 data-editable>Sets</h3>
+              <p data-editable>Mood and space, told visually</p>
+            </div>
+            <div class="journey-step on">
+              <div class="n" data-editable>03</div>
+              <h3 data-editable>Product</h3>
+              <p data-editable>Detail, material, dimension</p>
+            </div>
+            <div class="journey-step on">
+              <div class="n" data-editable>04</div>
+              <h3 data-editable>3D / AR</h3>
+              <p data-editable>Inspect, then place in space</p>
+            </div>
+            <div class="journey-step">
+              <div class="n" data-editable>05</div>
+              <h3 data-editable>Decide</h3>
+              <p data-editable>Save, share, consult</p>
+            </div>
+          </div>
+          <div class="g2" style="margin-top:5mm">
+            <div class="fig" style="height:62mm">
+              <img src="assets/avat/console.jpg" alt="" />
+            </div>
+            <div class="stack" style="align-content:center">
+              <p class="pp-quote" style="font-size:15px" data-editable>Experience it before it arrives.</p>
+              <div class="pp-rule accent" style="margin:3mm 0"></div>
+              <p class="sm" data-editable>The path reduces doubt, builds spatial understanding, and turns interest into a decision.</p>
+              <ul class="feature-list" style="margin-top:3mm">
+                <li data-editable>Save the object and its exact setup</li>
+                <li data-editable>Share it with someone else</li>
+                <li data-editable>Ask for a consultation</li>
+              </ul>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 06 HOMEPAGE -->
+      <section class="page" data-page-title="Homepage">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>06</p>
+          <p class="pp-kicker" data-editable>Homepage · Discovery</p>
+          <h1 class="pp-h1" data-editable>Enter the world</h1>
+          <p class="pp-lead" data-editable>The first screen should breathe: one image, one line, one invitation.</p>
+          <div class="pp-rule accent"></div>
+          <div class="desk" style="margin-top:2mm">
+            <div class="desk-chrome"><i></i><i></i><i></i></div>
+            <div class="desk-body">
+              <img src="assets/avat/living.jpg" alt="" />
+              <div class="desk-ui">
+                <div>
+                  <div class="brand" data-editable>BRAND</div>
+                  <p class="tiny" style="margin:1mm 0 3mm;color:var(--muted)" data-editable>Object · Space · Home</p>
+                  <h3 data-editable>Designed for presence</h3>
+                </div>
+                <div class="cta" data-editable>Explore collections</div>
+              </div>
+            </div>
+          </div>
+          <div class="g3" style="margin-top:4mm">
+            <div class="hairline">
+              <p class="en-label" data-editable>Motion</p>
+              <h3 style="margin:1mm 0;font-size:11px;font-family:var(--doc-display)" data-editable>Quiet image reveals</h3>
+              <p class="sm" data-editable>Motion supports the object. It never competes with it.</p>
+            </div>
+            <div class="hairline">
+              <p class="en-label" data-editable>Mobile-first</p>
+              <h3 style="margin:1mm 0;font-size:11px;font-family:var(--doc-display)" data-editable>Mobile first</h3>
+              <p class="sm" data-editable>The same visual language, set to a vertical rhythm.</p>
+            </div>
+            <div class="hairline">
+              <p class="en-label" data-editable>Navigation</p>
+              <h3 style="margin:1mm 0;font-size:11px;font-family:var(--doc-display)" data-editable>Quiet navigation</h3>
+              <p class="sm" data-editable>Collections, inspiration, consultation. No crowded menu.</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 07 COLLECTION -->
+      <section class="page" data-page-title="Collection">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>07</p>
+          <p class="pp-kicker" data-editable>Collection Experience</p>
+          <h1 class="pp-h1" data-editable>A collection is a space, not a list</h1>
+          <p class="pp-lead" data-editable>Each set is told through mood, light, and composition.</p>
+          <div class="pp-rule accent"></div>
+          <div class="g-visual" style="margin-top:2mm">
+            <div class="stack">
+              <div class="phone">
+                <div class="phone-island"></div>
+                <div class="phone-screen">
+                  <div class="wf-status"><span>9:41</span><span>BRAND</span></div>
+                  <div class="wf-body">
+                    <div class="wf-nav">
+                      <div class="wf-logo-text" data-editable>BRAND</div>
+                      <span class="tiny" data-editable>Search</span>
+                    </div>
+                    <div class="wf-hero">
+                      <img src="assets/avat/hero.jpg" alt="" />
+                      <div class="wf-hero-label" data-editable>Living</div>
+                    </div>
+                    <div class="wf-chips">
+                      <span class="wf-chip on" data-editable>All</span>
+                      <span class="wf-chip" data-editable>Living</span>
+                      <span class="wf-chip" data-editable>Bedroom</span>
+                    </div>
+                    <div class="wf-grid">
+                      <div class="wf-card"><img src="assets/avat/sofa.jpg" alt="" /><div class="meta"><b data-editable>Linen sofa</b><span data-editable>Collection</span></div></div>
+                      <div class="wf-card"><img src="assets/avat/chair.jpg" alt="" /><div class="meta"><b data-editable>Chair</b><span data-editable>Collection</span></div></div>
+                      <div class="wf-card"><img src="assets/avat/table.jpg" alt="" /><div class="meta"><b data-editable>Table</b><span data-editable>Natural wood</span></div></div>
+                      <div class="wf-card"><img src="assets/avat/lamp.jpg" alt="" /><div class="meta"><b data-editable>Lamp</b><span data-editable>Object</span></div></div>
+                    </div>
+                    <div class="wf-tabbar"><span class="on" data-editable>Home</span><span data-editable>Sets</span><span data-editable>Ideas</span><span data-editable>You</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="caption-row"><span data-editable>Mobile collection</span><span data-editable>Mood-first browsing</span></p>
+            </div>
+            <div class="stack" style="align-content:start;padding-top:2mm">
+              <div class="fig" style="height:48mm">
+                <img src="assets/avat/living2.jpg" alt="" />
+              </div>
+              <div class="panel sand" style="margin-top:0">
+                <h3 data-editable>Visual merchandising</h3>
+                <ul class="feature-list">
+                  <li data-editable>Enter through a scene, not a dry grid</li>
+                  <li data-editable>Mood filters beside categories</li>
+                  <li data-editable>Related pieces shown as one interior</li>
+                  <li data-editable>A direct path to shop the scene</li>
+                </ul>
+              </div>
+              <div class="note-l">
+                <p class="sm" data-editable>It should feel like walking a showroom, at the speed of the web.</p>
+              </div>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 08 PRODUCT -->
+      <section class="page" data-page-title="Product">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>08</p>
+          <p class="pp-kicker" data-editable>Product Experience</p>
+          <h1 class="pp-h1" data-editable>A precise, calm product page</h1>
+          <p class="pp-lead" data-editable>Craft, material, true dimensions, and a direct path into 3D and AR.</p>
+          <div class="pp-rule accent"></div>
+          <div class="g-visual">
+            <div>
+              <div class="phone" style="max-width:50mm">
+                <div class="phone-island"></div>
+                <div class="phone-screen">
+                  <div class="wf-status"><span>9:41</span><span>●●●</span></div>
+                  <div class="wf-body">
+                    <div class="wf-pdp-img">
+                      <img src="assets/avat/sofa2.jpg" alt="" />
+                      <div class="wf-pdp-badge" data-editable>3D · AR</div>
+                    </div>
+                    <p class="tiny" style="margin:0" data-editable>Collection</p>
+                    <h3 style="margin:0.5mm 0 1mm;font-size:10px;font-family:var(--doc-display);color:var(--ink)" data-editable>Three-seat sofa</h3>
+                    <p class="tiny" data-editable>True size · Fabric choice · Made to order</p>
+                    <div class="wf-swatches">
+                      <span class="wf-swatch on" style="background:#c9bcaa"></span>
+                      <span class="wf-swatch" style="background:#7a7166"></span>
+                      <span class="wf-swatch" style="background:#2a2420"></span>
+                      <span class="wf-swatch" style="background:#5c6b5a"></span>
+                    </div>
+                    <div class="mat-row">
+                      <div class="mat-swatch"><img src="assets/avat/material.jpg" alt="" /><span data-editable>Texture</span></div>
+                      <div class="mat-swatch"><img src="assets/avat/console.jpg" alt="" /><span data-editable>Wood</span></div>
+                    </div>
+                    <div class="wf-cta-row" style="margin-top:2.5mm">
+                      <div class="wf-btn ghost" data-editable>Save</div>
+                      <div class="wf-btn gold" data-editable>View in space</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="stack" style="align-content:center">
+              <div class="panel framed">
+                <h3 data-editable>What the page offers</h3>
+                <ul class="feature-list">
+                  <li data-editable>A cinematic gallery and craft close-ups</li>
+                  <li data-editable>Live color and fabric changes</li>
+                  <li data-editable>Specifications you can trust</li>
+                  <li data-editable>One step into the 3D viewer</li>
+                  <li data-editable>Companion pieces in one scene</li>
+                </ul>
+              </div>
+              <div class="panel ink">
+                <p class="en-label" style="color:var(--brass-soft)" data-editable>Craft</p>
+                <h3 data-editable>The making</h3>
+                <p class="sm" data-editable>Joints, texture, and finish, shown rather than only described.</p>
+              </div>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 09 3D -->
+      <section class="page" data-page-title="3D">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>09</p>
+          <p class="pp-kicker" data-editable>3D Experience</p>
+          <h1 class="pp-h1" data-editable>Inspect it more closely than a photograph</h1>
+          <p class="pp-lead" data-editable>Rotate, zoom, and change material. No lesson required.</p>
+          <div class="pp-rule accent"></div>
+          <div class="g-visual">
+            <div class="stack" style="align-content:center">
+              <div class="panel sand">
+                <h3 data-editable>For the viewer</h3>
+                <ul class="feature-list">
+                  <li data-editable>Read volume and proportion from every angle</li>
+                  <li data-editable>Compare fabric and color on the same model</li>
+                  <li data-editable>See how it is made, up close</li>
+                </ul>
+              </div>
+              <div class="panel framed">
+                <h3 data-editable>How it behaves</h3>
+                <ul class="feature-list">
+                  <li data-editable>Drag to rotate</li>
+                  <li data-editable>Pinch to zoom</li>
+                  <li data-editable>Reset the view</li>
+                  <li data-editable>Go straight to view in space</li>
+                </ul>
+              </div>
+              <div class="note-l">
+                <p class="sm" data-editable>If a 3D model is not ready, the gallery and specifications still carry the page.</p>
+              </div>
+            </div>
+            <div>
+              <div class="phone" style="max-width:54mm">
+                <div class="phone-island"></div>
+                <div class="phone-screen dark">
+                  <div class="wf-status"><span>9:41</span><span>3D</span></div>
+                  <div class="viewer-stage">
+                    <img src="assets/avat/sofa.jpg" alt="" style="mix-blend-mode:lighten;opacity:.95;filter:drop-shadow(0 3mm 6mm rgba(0,0,0,.5)) brightness(1.05)" />
+                    <div class="viewer-hint" data-editable>Drag to rotate</div>
+                  </div>
+                  <div class="viewer-bar">
+                    <div class="wf-btn ghost" style="color:#fff;border-color:rgba(255,255,255,.2)" data-editable>Reset</div>
+                    <div class="wf-btn gold" data-editable>View in space</div>
+                  </div>
+                </div>
+              </div>
+              <p class="caption-row" style="justify-content:center;gap:8mm"><span data-editable>Interactive viewer</span><span data-editable>Material variants</span></p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 10 AR HERO -->
+      <section class="page" data-page-title="Augmented reality">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>10</p>
+          <p class="pp-kicker" data-editable>Augmented Reality</p>
+          <h1 class="pp-h1 xl" data-editable>The object enters the room before it is bought.</h1>
+          <p class="pp-lead" data-editable>True scale. No separate app required for the main AR flow.</p>
+          <div class="pp-rule accent"></div>
+          <div class="g-visual" style="align-items:start">
+            <div>
+              <div class="phone" style="max-width:56mm">
+                <div class="phone-island"></div>
+                <div class="phone-screen ar">
+                  <div class="wf-status"><span>9:41</span><span>AR</span></div>
+                  <div class="ar-cam"><img src="assets/avat/living.jpg" alt="" /></div>
+                  <img class="ar-sofa" src="assets/avat/sofa.jpg" alt="" />
+                  <div class="ar-badge l" data-editable>Surface found</div>
+                  <div class="ar-badge r" data-editable>Scale 1:1</div>
+                  <div class="ar-controls">
+                    <span data-editable>Move</span>
+                    <span data-editable>Rotate</span>
+                    <span data-editable>Capture</span>
+                  </div>
+                </div>
+              </div>
+              <p class="caption-row" style="justify-content:center"><span data-editable>View in Your Space</span></p>
+            </div>
+            <div class="stack">
+              <div class="panel ink">
+                <h3 data-editable>The flow</h3>
+                <ul class="feature-list">
+                  <li data-editable>Product, then explore in 3D</li>
+                  <li data-editable>View in my space</li>
+                  <li data-editable>Open the phone camera</li>
+                  <li data-editable>Place it at real scale</li>
+                  <li data-editable>Move, rotate, inspect</li>
+                  <li data-editable>Change, save, or ask</li>
+                </ul>
+              </div>
+              <div class="handoff">
+                <div style="text-align:center">
+                  <p class="en-label" data-editable>Desktop</p>
+                  <p class="sm" style="margin-top:1mm" data-editable>Choose on desktop</p>
+                </div>
+                <div class="qr-block" aria-hidden="true" title="QR handoff"></div>
+                <div style="text-align:center">
+                  <p class="en-label" data-editable>Mobile AR</p>
+                  <p class="sm" style="margin-top:1mm" data-editable>Place it in a real room</p>
+                </div>
+              </div>
+              <p class="sm" data-editable>Apple uses AR Quick Look. Android uses Scene Viewer or WebXR. If AR is unavailable, the page returns to the product.</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 11 AR FLOW + INSPIRATION -->
+      <section class="page" data-page-title="Inspiration">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>11</p>
+          <p class="pp-kicker" data-editable>Inspiration · Shop the Room</p>
+          <h1 class="pp-h1" data-editable>A destination for interiors</h1>
+          <p class="pp-lead" data-editable>Not only single objects. Whole scenes, ready to live with.</p>
+          <div class="pp-rule accent"></div>
+          <div class="fig" style="height:52mm;margin-top:1mm">
+            <img src="assets/avat/living2.jpg" alt="" />
+            <div class="fig-overlay-text" data-editable>Shop the scene</div>
+          </div>
+          <div class="g3" style="margin-top:4mm">
+            <div class="panel sand">
+              <p class="en-label" data-editable>Lookbook</p>
+              <h3 data-editable>Inspiration and journal</h3>
+              <p class="sm" data-editable>Space, material, and composition, linked straight to the objects.</p>
+            </div>
+            <div class="panel sand">
+              <p class="en-label" data-editable>Composition</p>
+              <h3 data-editable>Pieces that complete the room</h3>
+              <p class="sm" data-editable>Seating, tables, light, and texture, shown as one composition.</p>
+            </div>
+            <div class="panel ink">
+              <p class="en-label" style="color:var(--brass-soft)" data-editable>Future</p>
+              <h3 data-editable>Room Composer</h3>
+              <p class="sm" data-editable>A room planner can come later, without weighing down the first release.</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 12 CONSULTATION -->
+      <section class="page" data-page-title="Consultation">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>12</p>
+          <p class="pp-kicker" data-editable>Consultation & Conversion</p>
+          <h1 class="pp-h1" data-editable>From inspiration to a conversation</h1>
+          <p class="pp-lead" data-editable>A saved setup can be sent on, with the same color, fabric, and size.</p>
+          <div class="pp-rule accent"></div>
+          <div class="phones-row" style="margin-top:2mm">
+            <div class="phone">
+              <div class="phone-island"></div>
+              <div class="phone-screen">
+                <div class="wf-status"><span>9:41</span><span>Save</span></div>
+                <div class="wf-body">
+                  <p class="wf-logo-text" style="margin-bottom:2mm" data-editable>Saved</p>
+                  <div class="wf-card" style="margin-bottom:1.6mm"><img src="assets/avat/sofa2.jpg" alt="" style="height:20mm" /><div class="meta"><b data-editable>Linen sofa · Sand</b><span data-editable>Saved setup</span></div></div>
+                  <div class="wf-card"><img src="assets/avat/chair.jpg" alt="" style="height:18mm" /><div class="meta"><b data-editable>Chair</b><span data-editable>Collection</span></div></div>
+                  <div class="wf-btn" style="margin-top:auto" data-editable>Share with an advisor</div>
+                </div>
+              </div>
+            </div>
+            <div class="phone">
+              <div class="phone-island"></div>
+              <div class="phone-screen">
+                <div class="wf-status"><span>9:41</span><span>Consult</span></div>
+                <div class="wf-body">
+                  <p class="wf-logo-text" style="margin-bottom:1mm" data-editable>Request a consultation</p>
+                  <p class="tiny" style="margin-bottom:2.5mm" data-editable>Your setup is sent to the team.</p>
+                  <div class="panel sand" style="padding:2.5mm;margin-bottom:2mm">
+                    <p class="tiny" style="color:var(--ink);font-weight:700" data-editable>Three-seat · Linen · Color 03</p>
+                    <p class="tiny" data-editable>With the saved AR image</p>
+                  </div>
+                  <div style="height:8mm;background:#fff;border:1px solid var(--line);margin-bottom:1.5mm"></div>
+                  <div style="height:8mm;background:#fff;border:1px solid var(--line);margin-bottom:2mm"></div>
+                  <div class="wf-btn gold" data-editable>Send request</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="g3" style="margin-top:4mm">
+            <div class="hairline">
+              <h3 style="margin:0 0 1mm;font-size:11px;font-family:var(--doc-display)" data-editable>Save</h3>
+              <p class="sm" data-editable>The object and its exact setup</p>
+            </div>
+            <div class="hairline">
+              <h3 style="margin:0 0 1mm;font-size:11px;font-family:var(--doc-display)" data-editable>Share</h3>
+              <p class="sm" data-editable>With family or an advisor</p>
+            </div>
+            <div class="hairline">
+              <h3 style="margin:0 0 1mm;font-size:11px;font-family:var(--doc-display)" data-editable>Order</h3>
+              <p class="sm" data-editable>A path to purchase that stays inside the experience</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 13 PLATFORM -->
+      <section class="page" data-page-title="Platform">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>13</p>
+          <p class="pp-kicker" data-editable>Platform · CMS</p>
+          <h1 class="pp-h1" data-editable>Full control of content and 3D assets</h1>
+          <p class="pp-lead" data-editable>The showroom stays alive only if the team can edit it with care.</p>
+          <div class="pp-rule accent"></div>
+          <div class="admin-grid" style="margin-top:2mm">
+            <div class="admin-cell"><h3 data-editable>Products</h3><p data-editable>Facts, price, stock, specifications</p></div>
+            <div class="admin-cell"><h3 data-editable>Collections</h3><p data-editable>Story, order, merchandising</p></div>
+            <div class="admin-cell"><h3 data-editable>Content</h3><p data-editable>Journal, inspiration, scenes</p></div>
+            <div class="admin-cell"><h3 data-editable>Images</h3><p data-editable>Gallery, close-ups, lookbook</p></div>
+            <div class="admin-cell"><h3 data-editable>Variants</h3><p data-editable>Color, fabric, material</p></div>
+            <div class="admin-cell"><h3 data-editable>3D and AR</h3><p data-editable>GLB / USDZ and publish state</p></div>
+            <div class="admin-cell"><h3 data-editable>SEO</h3><p data-editable>Title, description, structure</p></div>
+            <div class="admin-cell"><h3 data-editable>Consult</h3><p data-editable>Requests and saved setups</p></div>
+            <div class="admin-cell"><h3 data-editable>Insight</h3><p data-editable>3D use, AR use, conversion</p></div>
+          </div>
+          <div class="panel ink" style="margin-top:4mm">
+            <div class="g2" style="gap:6mm">
+              <div>
+                <p class="en-label" style="color:var(--brass-soft)" data-editable>Analytics that matter</p>
+                <h3 data-editable>What we measure</h3>
+                <p class="sm" data-editable>AR starts, configuration changes, saves, consultations, and the path to a decision.</p>
+              </div>
+              <div>
+                <p class="en-label" style="color:var(--brass-soft)" data-editable>Editorial control</p>
+                <h3 data-editable>The brand stays intact</h3>
+                <p class="sm" data-editable>The studio is built so the result still feels like the brand.</p>
+              </div>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 14 TECH -->
+      <section class="page" data-page-title="Technology">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp">
+          <p class="pp-num" data-editable>14</p>
+          <p class="pp-kicker" data-editable>Experience & Technology</p>
+          <h1 class="pp-h1" data-editable>Technology serves the experience</h1>
+          <p class="pp-lead" data-editable>The benefit comes first. The tool comes second.</p>
+          <div class="pp-rule accent"></div>
+          <div class="tech-row">
+            <div class="lab" data-editable>Web 3D</div>
+            <div>
+              <h3 data-editable>A 3D viewer in the browser</h3>
+              <p data-editable>GLB / glTF models for a fast look on phone and desktop, using model-viewer or a custom viewer.</p>
+            </div>
+          </div>
+          <div class="tech-row">
+            <div class="lab" data-editable>Apple AR</div>
+            <div>
+              <h3 data-editable>AR Quick Look</h3>
+              <p data-editable>A USDZ file places the object on iPhone and iPad, without a separate app.</p>
+            </div>
+          </div>
+          <div class="tech-row">
+            <div class="lab" data-editable>Android AR</div>
+            <div>
+              <h3 data-editable>Scene Viewer / WebXR</h3>
+              <p data-editable>Web AR on Android, with a graceful fallback when the device cannot run it.</p>
+            </div>
+          </div>
+          <div class="tech-row">
+            <div class="lab" data-editable>Handoff</div>
+            <div>
+              <h3 data-editable>Desktop to phone with a QR code</h3>
+              <p data-editable>Choose on the desktop. Place it in the room on the phone. One flow.</p>
+            </div>
+          </div>
+          <div class="tech-row">
+            <div class="lab" data-editable>Motion</div>
+            <div>
+              <h3 data-editable>Luxury motion</h3>
+              <p data-editable>Image reveals, collection transitions, and small interactions. Calm, precise, and always readable.</p>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+      <!-- 15 CLOSING -->
+      <section class="page pp-dark" data-page-title="Close">
+        <div class="page-select-ring"></div>
+        <div class="page-body pp-bleed">
+          <div class="close-wrap">
+            <p class="pp-kicker" style="color:var(--brass-soft)" data-editable>Closing</p>
+            <p class="close-quote" data-editable>Presence, designed.<br>This time, in digital form.</p>
+            <p class="close-sub" data-editable>A flagship online: to discover, to experience, and to decide.</p>
+            <div style="margin-top:10mm;display:flex;justify-content:space-between;align-items:flex-end;max-width:170mm">
+              <div>
+                <p class="en-label" style="color:var(--brass-soft)" data-editable>Next step</p>
+                <p class="sm" style="color:rgba(245,241,234,.7);margin-top:1.5mm;max-width:90mm" data-editable>Align the scope, choose the first 3D assets, and begin.</p>
+              </div>
+            </div>
+          </div>
+<span class="page-no" data-page-number></span>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script>
+    /* ============================================================
+       DOCUMENT STUDIO ENGINE JS — preserve unless extending engine.
+       The document itself lives inside #documentRoot.
+       ============================================================ */
+    (() => {
+      const root = document.getElementById('documentRoot');
+      const viewer = document.getElementById('viewer');
+      const pageRail = document.getElementById('pageRail');
+      const pageInput = document.getElementById('pageInput');
+      const pageCount = document.getElementById('pageCount');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const editBtn = document.getElementById('editBtn');
+      const themeBtn = document.getElementById('themeBtn');
+      const themePanel = document.getElementById('themePanel');
+      const printBtn = document.getElementById('printBtn');
+      const addTextBtn = document.getElementById('addTextBtn');
+      const addPageBtn = document.getElementById('addPageBtn');
+      const duplicatePageBtn = document.getElementById('duplicatePageBtn');
+      const deletePageBtn = document.getElementById('deletePageBtn');
+      const exportHtmlBtn = document.getElementById('exportHtmlBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const zoomLabel = document.getElementById('zoomLabel');
+      const statusText = document.getElementById('statusText');
+      const statusDot = document.getElementById('statusDot');
+
+      const STORAGE_KEY = 'universal-ai-document-studio:v5-lizmo-fa-formal-icons:' + location.pathname;
+      const INITIAL_DOCUMENT = root.innerHTML;
+      const INITIAL_THEME = snapshotTheme();
+      let currentPage = 1;
+      let editMode = false;
+      let zoom = 1;
+      let observer;
+      let saveTimer;
+      let lastRange = null;
+
+      function pages() { return [...root.querySelectorAll(':scope > .page')]; }
+      function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+      function setStatus(text, warning = false) {
+        statusText.textContent = text;
+        statusDot.classList.toggle('warn', warning);
+      }
+
+      function snapshotTheme() {
+        const styles = getComputedStyle(root);
+        const vars = ['--doc-primary','--doc-secondary','--doc-accent','--doc-text','--doc-muted','--doc-surface','--doc-paper'];
+        return Object.fromEntries(vars.map(v => [v, styles.getPropertyValue(v).trim()]));
+      }
+
+      function applyTheme(theme = {}) {
+        Object.entries(theme).forEach(([k,v]) => root.style.setProperty(k, v));
+        document.querySelectorAll('#themePanel input[type="color"][data-var]').forEach(input => {
+          const value = getComputedStyle(root).getPropertyValue(input.dataset.var).trim();
+          if (/^#[0-9a-f]{6}$/i.test(value)) input.value = value;
+        });
+      }
+
+      function cleanDocumentHTML() {
+        const clone = root.cloneNode(true);
+        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        clone.querySelectorAll('.current-page').forEach(el => el.classList.remove('current-page'));
+        clone.querySelectorAll('[data-overflow]').forEach(el => el.removeAttribute('data-overflow'));
+        clone.querySelectorAll('.ds-handles').forEach(el => el.remove());
+        clone.querySelectorAll('.ds-object.selected').forEach(el => el.classList.remove('selected'));
+        clone.querySelectorAll('.ds-search-hit').forEach(el => {
+          const parent = el.parentNode;
+          while (el.firstChild) parent.insertBefore(el.firstChild, el);
+          parent.removeChild(el);
+        });
+        return clone.innerHTML;
+      }
+
+      function saveState(showMessage = false) {
+        try {
+          const base = { html: cleanDocumentHTML(), theme: snapshotTheme(), savedAt: Date.now() };
+          const state = window.EditorFeatures?.getSavePayload?.(base) || base;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          if (showMessage) setStatus('Saved locally');
+          else setStatus('Autosaved');
+        } catch (err) {
+          console.warn('Save failed', err);
+          setStatus('Local save unavailable', true);
+        }
+      }
+
+      function scheduleSave() {
+        clearTimeout(saveTimer);
+        setStatus('Unsaved changes');
+        saveTimer = setTimeout(() => saveState(false), 500);
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          if (state.html) root.innerHTML = state.html;
+          if (state.theme) applyTheme(state.theme);
+          window.EditorFeatures?.loadSavePayload?.(state);
+          setStatus('Restored local edits');
+        } catch (err) { console.warn('Restore failed', err); }
+      }
+
+      function resetState() {
+        if (!confirm('Reset this document to the HTML file’s original state?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        root.innerHTML = INITIAL_DOCUMENT;
+        Object.entries(INITIAL_THEME).forEach(([k,v]) => root.style.setProperty(k,v));
+        editMode = false;
+        document.body.classList.remove('edit-mode');
+        editBtn.classList.remove('active');
+        editBtn.textContent = 'Edit';
+        refreshAll();
+        setStatus('Reset complete');
+      }
+
+      function editableCandidates() {
+        const selector = '[data-editable], h1, h2, h3, h4, h5, h6, p, li, td, th, figcaption, blockquote, .ds-textbox, .ds-page-header, .ds-page-footer';
+        return [...root.querySelectorAll(selector)].filter(el => !el.closest('[data-no-edit]'));
+      }
+
+      function setEditMode(on) {
+        editMode = !!on;
+        document.body.classList.toggle('edit-mode', editMode);
+        editBtn.classList.toggle('active', editMode);
+        editBtn.textContent = editMode ? 'Preview' : 'Edit';
+        editableCandidates().forEach(el => {
+          if (editMode) {
+            el.setAttribute('contenteditable', 'true');
+            el.setAttribute('spellcheck', 'true');
+          } else {
+            el.removeAttribute('contenteditable');
+            el.removeAttribute('spellcheck');
+          }
+        });
+        if (editMode) window.EditorCore?.snapshotHistory?.();
+        setStatus(editMode ? 'Edit mode' : 'Preview mode');
+      }
+      function _setEditMode(on) { setEditMode(on); }
+
+      function updatePageNumbers() {
+        pages().forEach((page, i) => {
+          page.dataset.pageIndex = String(i + 1);
+          page.querySelectorAll('[data-page-number]').forEach(el => el.textContent = String(i + 1).padStart(2, '0'));
+        });
+      }
+
+      function buildRail() {
+        if (window.__dsBuildRailV2) { window.__dsBuildRailV2(); return; }
+        pageRail.innerHTML = '';
+        pages().forEach((page, i) => {
+          const b = document.createElement('button');
+          b.className = 'rail-page';
+          b.type = 'button';
+          b.textContent = i + 1;
+          b.title = page.dataset.pageTitle || `Page ${i + 1}`;
+          b.addEventListener('click', () => goToPage(i + 1));
+          pageRail.appendChild(b);
+        });
+      }
+
+      function markCurrent(n) {
+        const all = pages();
+        if (!all.length) return;
+        currentPage = clamp(Number(n) || 1, 1, all.length);
+        all.forEach((p, i) => p.classList.toggle('current-page', i === currentPage - 1));
+        [...pageRail.children].forEach((b, i) => b.classList.toggle('active', i === currentPage - 1));
+        pageInput.value = currentPage;
+        pageCount.textContent = `/ ${all.length}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= all.length;
+        deletePageBtn.disabled = all.length <= 1;
+        window.EditorFeatures?.syncRailActive?.();
+      }
+
+      function goToPage(n) {
+        const all = pages();
+        if (!all.length) return;
+        const target = clamp(Number(n) || 1, 1, all.length);
+        markCurrent(target);
+        all[target - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function setupObserver() {
+        if (observer) observer.disconnect();
+        observer = new IntersectionObserver(entries => {
+          const visible = entries.filter(e => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio);
+          if (visible[0]) markCurrent(Number(visible[0].target.dataset.pageIndex));
+        }, { root: null, threshold: [0.2,0.35,0.5,0.65,0.8] });
+        pages().forEach(p => observer.observe(p));
+      }
+
+      function detectOverflow() {
+        let count = 0;
+        pages().forEach((page, i) => {
+          const body = page.querySelector('.page-body') || page;
+          const overflow = body.scrollHeight > body.clientHeight + 2 || body.scrollWidth > body.clientWidth + 2;
+          page.dataset.overflow = overflow ? 'true' : 'false';
+          const rail = pageRail.children[i];
+          if (rail) rail.classList.toggle('has-overflow', overflow);
+          const railV2 = document.getElementById('pageRailV2')?.children[i];
+          if (railV2) railV2.classList.toggle('has-overflow', overflow);
+          if (overflow) count++;
+        });
+        if (count) setStatus(`${count} page${count === 1 ? '' : 's'} may overflow`, true);
+        return count;
+      }
+
+      function refreshAll() {
+        updatePageNumbers();
+        buildRail();
+        setupObserver();
+        markCurrent(clamp(currentPage, 1, Math.max(1, pages().length)));
+        if (editMode) setEditMode(true);
+        requestAnimationFrame(() => {
+          detectOverflow();
+          window.__dsBuildRailV2?.();
+          window.EditorFeatures?.updateThumbScales?.();
+        });
+      }
+
+      function addBlankPage() {
+        const page = document.createElement('section');
+        page.className = 'page';
+        page.dataset.pageTitle = 'New Page';
+        page.innerHTML = `
+          <div class="page-select-ring"></div>
+          <div class="page-body doc-pad">
+            <p class="kicker" data-editable>New page</p>
+            <h1 class="display" data-editable>Start creating here.</h1>
+            <p class="lede" data-editable>This blank page uses only minimal starter styling. Replace it with any layout, visual system, or content.</p>
+            <span class="page-no" data-page-number></span>
+          </div>`;
+        const all = pages();
+        (all[currentPage - 1] || all[all.length - 1])?.after(page);
+        refreshAll();
+        goToPage(currentPage + 1);
+        setEditMode(true);
+        scheduleSave();
+      }
+
+      function duplicatePage() {
+        const all = pages();
+        const source = all[currentPage - 1];
+        if (!source) return;
+        const copy = source.cloneNode(true);
+        copy.classList.remove('current-page');
+        copy.removeAttribute('data-overflow');
+        copy.dataset.pageTitle = (source.dataset.pageTitle || 'Page') + ' copy';
+        copy.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        source.after(copy);
+        refreshAll();
+        goToPage(currentPage + 1);
+        if (editMode) setEditMode(true);
+        scheduleSave();
+      }
+
+      function deleteCurrentPage() {
+        const all = pages();
+        if (all.length <= 1) return;
+        const source = all[currentPage - 1];
+        if (!source) return;
+        const next = Math.min(currentPage, all.length - 1);
+        source.remove();
+        currentPage = next;
+        refreshAll();
+        goToPage(next);
+        scheduleSave();
+      }
+
+      function addText() {
+        const page = pages()[currentPage - 1];
+        if (!page) return;
+        const body = page.querySelector('.page-body') || page;
+        const p = document.createElement('p');
+        p.dataset.editable = '';
+        p.textContent = 'New editable text';
+        p.style.cssText = 'font-size:10px;line-height:1.5;margin:5mm 0;color:var(--doc-text);';
+        body.appendChild(p);
+        setEditMode(true);
+        p.focus();
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(p);
+        sel.removeAllRanges(); sel.addRange(range);
+        scheduleSave();
+        detectOverflow();
+      }
+
+      function setZoom(next) {
+        zoom = clamp(Math.round(next * 100) / 100, .45, 1.6);
+        document.documentElement.style.setProperty('--zoom', zoom);
+        zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+      }
+
+      function fitWidth() {
+        const basePx = 793.7008; // 210mm at 96 CSS px/in
+        const available = window.innerWidth - (window.innerWidth < 900 ? 82 : 156);
+        setZoom(Math.min(1, available / basePx));
+      }
+
+      function preserveSelection() {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount && root.contains(sel.anchorNode)) lastRange = sel.getRangeAt(0).cloneRange();
+      }
+      function restoreSelection() {
+        if (!lastRange) return;
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(lastRange);
+      }
+      function exec(cmd, value = null) {
+        if (!editMode) return;
+        restoreSelection();
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand(cmd, false, value);
+        preserveSelection();
+        scheduleSave();
+      }
+
+      function exportHTML() {
+        const clone = document.documentElement.cloneNode(true);
+        const cloneRoot = clone.querySelector('#documentRoot');
+        cloneRoot.innerHTML = cleanDocumentHTML();
+        cloneRoot.style.cssText = root.style.cssText;
+        clone.querySelector('body')?.classList.remove('edit-mode');
+        clone.querySelector('#themePanel')?.classList.remove('open');
+        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        const html = '<!doctype html>\n' + clone.outerHTML;
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'document-studio-export.html';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        setStatus('HTML exported');
+      }
+
+      // Restore edits before engine bindings.
+      loadState();
+
+      prevBtn.addEventListener('click', () => goToPage(currentPage - 1));
+      nextBtn.addEventListener('click', () => goToPage(currentPage + 1));
+      pageInput.addEventListener('change', () => goToPage(pageInput.value));
+      editBtn.addEventListener('click', () => setEditMode(!editMode));
+      themeBtn.addEventListener('click', () => themePanel.classList.toggle('open'));
+      printBtn.addEventListener('click', () => {
+        setEditMode(false);
+        setZoom(1);
+        document.documentElement.style.setProperty('--zoom', '1');
+        root.style.zoom = '1';
+        detectOverflow();
+        const issues = window.EditorFeatures?.runPreflight?.() || [];
+        const critical = issues.filter(i => i.level === 'error');
+        if (critical.length && !confirm(`Preflight found ${critical.length} error(s). Print anyway?`)) return;
+        window.print();
+      });
+      addTextBtn.addEventListener('click', addText);
+      addPageBtn.addEventListener('click', addBlankPage);
+      duplicatePageBtn.addEventListener('click', duplicatePage);
+      deletePageBtn.addEventListener('click', deleteCurrentPage);
+      exportHtmlBtn.addEventListener('click', exportHTML);
+      saveBtn.addEventListener('click', () => saveState(true));
+      resetBtn.addEventListener('click', resetState);
+      document.getElementById('zoomOutBtn').addEventListener('click', () => setZoom(zoom - .1));
+      document.getElementById('zoomInBtn').addEventListener('click', () => setZoom(zoom + .1));
+      document.getElementById('fitBtn').addEventListener('click', () => {
+        if (window.EditorUI?.fitPage) EditorUI.fitPage();
+        else fitWidth();
+      });
+
+      document.querySelectorAll('#themePanel input[type="color"][data-var]').forEach(input => {
+        input.addEventListener('input', () => { root.style.setProperty(input.dataset.var, input.value); scheduleSave(); });
+      });
+
+      root.addEventListener('input', () => {
+        scheduleSave();
+        detectOverflow();
+        window.EditorCore?.pushHistory?.();
+      });
+      root.addEventListener('mouseup', preserveSelection);
+      root.addEventListener('keyup', preserveSelection);
+      root.addEventListener('paste', () => setTimeout(() => { scheduleSave(); detectOverflow(); window.EditorCore?.pushHistory?.(); }, 0));
+
+      window.addEventListener('keydown', e => {
+        const active = document.activeElement;
+        const typing = active && (active.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(active.tagName));
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') return; // browser print
+        if (typing) return;
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goToPage(currentPage - 1); }
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goToPage(currentPage + 1); }
+        if (e.key === 'Home') { e.preventDefault(); goToPage(1); }
+        if (e.key === 'End') { e.preventDefault(); goToPage(pages().length); }
+        if (e.key.toLowerCase() === 'e') setEditMode(!editMode);
+      });
+
+      window.addEventListener('resize', () => detectOverflow());
+      window.addEventListener('beforeprint', () => {
+        setEditMode(false);
+        setZoom(1);
+        document.documentElement.style.setProperty('--zoom', '1');
+        root.style.zoom = '1';
+        themePanel.classList.remove('open');
+      });
+      window.addEventListener('afterprint', () => {
+        root.style.removeProperty('zoom');
+      });
+
+      applyTheme(snapshotTheme());
+      refreshAll();
+      setZoom(1);
+
+      const engineFacade = {
+        root, pages, goToPage, addBlankPage, duplicatePage, deleteCurrentPage,
+        refreshAll, detectOverflow, scheduleSave, setEditMode, _setEditMode,
+        setZoom, fitWidth, saveState, cleanDocumentHTML, snapshotTheme, applyTheme, setStatus,
+        get editMode() { return editMode; }
+      };
+      window.__DocumentStudioEngine = engineFacade;
+
+      // Public API for AIs or advanced users who want to extend the runtime.
+      window.DocumentStudio = Object.freeze({
+        pages,
+        goToPage,
+        addPage: addBlankPage,
+        duplicatePage,
+        deleteCurrentPage,
+        updatePageNumbers,
+        detectOverflow,
+        save: () => saveState(true),
+        print: () => window.print(),
+        exportHTML,
+        exportProject: () => window.EditorFeatures?.exportProject?.(),
+        importProject: (file) => window.EditorFeatures?.importProject?.(file),
+        setEditMode,
+        refresh: refreshAll,
+        setZoom,
+        runPreflight: () => window.EditorFeatures?.runPreflight?.(),
+        undo: () => window.EditorCore?.undo?.(),
+        redo: () => window.EditorCore?.redo?.()
+      });
+    })();
+  </script>
+  <script src="js/fonts-meta.js"></script>
+  <script src="js/editor-core.js"></script>
+  <script src="js/editor-features.js"></script>
+  <script src="js/editor-ui.js"></script>
+  <script>
+    if (window.__DocumentStudioEngine && window.EditorUI) {
+      EditorUI.init(window.__DocumentStudioEngine);
+    }
+  </script>
+</body>
+</html>
